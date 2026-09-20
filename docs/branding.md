@@ -7,6 +7,7 @@ Two overlapping displays represent one shared workspace. The navigation cursor r
 - Editable vector: [logo.svg](images/logo.svg)
 - README raster: [logo.png](images/logo.png)
 - macOS icon generator: [make-icon.swift](../scripts/make-icon.swift)
+- Theme-aware, transparent in-app mark: [BrandMark.swift](../Sources/ScreenPilot/BrandMark.swift)
 - Windows multi-resolution icon: [ScreenPilot.ico](../WindowsBridge/ScreenPilot.ico)
 
 The original geometry is drawn deterministically using SVG/AppKit, without an image-generation service. The icon is bundled in both desktop binaries. Copyright © 2026 QiushanHuang (Qiushan); see the project license.

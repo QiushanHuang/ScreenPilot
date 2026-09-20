@@ -14,7 +14,7 @@ struct Dashboard: View {
         HStack(spacing:0) {
             VStack(alignment:.leading,spacing:28) {
                 HStack(spacing:10) {
-                    Image(nsImage: NSImage(contentsOf: Bundle.main.resourceURL!.appendingPathComponent("ScreenPilot-logo.png")) ?? NSImage()).resizable().frame(width:36,height:36)
+                    BrandMark().frame(width:36,height:36)
                     VStack(alignment:.leading,spacing:2) { Text("屏幕管家").font(.system(size:19,weight:.bold)); Text("SCREEN PILOT").font(.system(size:9,weight:.semibold,design:.monospaced)).tracking(2).foregroundStyle(.secondary) }
                 }.padding(.top,14)
                 VStack(spacing:7) {
