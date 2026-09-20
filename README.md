@@ -152,6 +152,8 @@ See [contributors](CONTRIBUTORS.md). Original code and artwork: **all rights res
 
 <a id="中文"></a>
 
+<p align="center"><img src="docs/images/logo.png" width="144" alt="屏幕管家 — 双屏与指向标记"></p>
+
 ## 中文
 
 [![English](https://img.shields.io/badge/Language-English-24292f)](#english)
