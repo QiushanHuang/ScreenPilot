@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <ApplicationIcon>ScreenPilot.ico</ApplicationIcon>
+    <AssemblyName>ScreenPilotBridge</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>5</LangVersion>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all" />
+    <EmbeddedResource Include="ScreenPilot.ico" LogicalName="ScreenPilot.ico" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
+    <Compile Include="ScreenPilotBridge.cs" />
+    <Compile Include="LocalControlPanel.cs" />
+    <Compile Include="DesktopSetup.cs" />
+    <Compile Include="AboutPanel.cs" />
+    <EmbeddedResource Include="ThirdPartyNotices.txt" LogicalName="ScreenPilot.ThirdPartyNotices.txt" />
+  </ItemGroup>
+</Project>

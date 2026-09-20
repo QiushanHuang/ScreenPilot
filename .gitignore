@@ -1,0 +1,16 @@
+.DS_Store
+.build/
+dist/
+artifacts/
+WindowsBridge/bin/
+WindowsBridge/obj/
+Config/VerifiedInputs.json
+docs/research/
+docs/superpowers/
+scripts/test-disconnect*.py
+*.log
+*.pdb
+.env*
+
+__pycache__/
+*.py[cod]

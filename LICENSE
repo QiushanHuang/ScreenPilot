@@ -1,0 +1,10 @@
+ScreenPilot
+Copyright (c) 2026 QiushanHuang (Qiushan). All rights reserved.
+
+No general open-source license is granted for the original ScreenPilot code or
+artwork in this repository. Publication on GitHub does not grant additional
+rights to use, modify, or redistribute those materials. Contact the maintainer
+for licensing permission: https://github.com/QiushanHuang
+
+Third-party components retain their own licenses. In particular, m1ddc is
+licensed under the MIT License; see Vendor/m1ddc/LICENSE.
