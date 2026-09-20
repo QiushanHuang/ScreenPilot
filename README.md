@@ -12,23 +12,37 @@
 [![Apple Silicon](https://img.shields.io/badge/Apple-Silicon-78e8c4)](https://github.com/QiushanHuang/ScreenPilot/releases/latest)
 [![Windows companion](https://img.shields.io/badge/Windows-10%20%2F%2011-0078d4)](https://github.com/QiushanHuang/ScreenPilot/releases/latest)
 
-**A native display control center for your Mac, with an optional Windows companion.**
-Adjust each screen, save output presets, and recover your workspace from the menu bar.
-For compatible, explicitly configured shared monitors, pair the Windows companion to coordinate input switching when a shared USB keyboard or mouse changes hosts.
+**One desk. Several screens. A simpler way to switch, focus and recover.**
+ScreenPilot brings per-screen brightness, output presets and compatible Mac/Windows input switching into one native Mac control center, with an optional Windows companion. Keep the screens you need active, give unused displays a chance to sleep, and bring your workspace back from the menu bar.
+
+## Why ScreenPilot exists
+
+A black picture is not necessarily a powered-down display. On an LCD, a black wallpaper or software overlay can leave the backlight running: the screen still glows in a dark room and continues consuming power. Meanwhile, a desk with several monitors and two computers can mean repeated trips through monitor input menus, brightness controls and macOS display settings.
+
+ScreenPilot brings those everyday actions together. Choose **blackout** when you want to keep the desktop layout, or **stop Mac output** when you want to remove an unused desktop and let a compatible monitor enter its no-signal standby state. Standby and energy savings depend on the display and any other active input; ScreenPilot does not claim measured power savings.
+
+## Where it helps
+
+| At your desk | With ScreenPilot |
+| --- | --- |
+| You finish working across three screens and only need the laptop | Use **built-in screen only**, or run a saved output preset instead of disconnecting each cable |
+| An unused LCD lights up the room even with a black picture | Stop its Mac output so a compatible monitor can enter standby; use software blackout when keeping the layout matters more |
+| You work on a Mac and switch to a Windows PC on the same monitor | With a verified monitor mapping and LAN pairing, coordinate input switching from the apps instead of repeatedly reaching for the monitor's buttons |
+| A USB switch moves your keyboard and mouse between computers | After setup, USB arrival can trigger the paired display-input workflow, reducing a separate manual input-selection step |
+| You alternate between a full workspace and an evening reading setup | Save output combinations and brightness/blackout scenes, then apply the setup you need |
+| You want to try a different screen configuration without losing your way back | Start with timed recovery; use per-screen reconnect or **restore all** from the menu bar or `⌃⌥⌘ R` |
+
+## What makes it different
+
+- **Coordinates the desk as a whole.** Brightness, active Mac outputs and a configured Windows companion live in one workflow. The companion can request input changes from the Windows side, useful when a monitor no longer accepts commands from its inactive Mac input. Compatibility still depends on the monitor.
+- **Makes “dark” and “disconnected” separate choices.** Software blackout preserves the desktop; stopping output can let an unused LCD sleep. The controls make that tradeoff visible, instead of treating every black screen as power-off.
+- **Makes recurring setups quick to use and recover.** Named presets, a built-in-screen shortcut, timed restoration and an independent recovery helper reduce repeated setup work. At least one Mac screen stays active; recovery attempts report failures rather than assuming success.
+
+**Hardware brightness** uses native/DDC controls where supported; **software dimming** remains available as a clearly labeled visual fallback. Everything runs without an account or analytics. Pairing and startup are opt-in.
+
+**Shared-host setup:** public builds include no personal monitor mapping. Mac/Windows host controls and USB automation require a locally verified mapping, a rebuild and LAN pairing; see [hardware setup](docs/hardware-setup.md). This coordinates existing video connections and a physical USB switch—it does not carry video or keyboard/mouse data between computers.
 
 The application interface is currently **Simplified Chinese**. This README provides English and Chinese instructions; the language badges jump within this page.
-
-## Why ScreenPilot
-
-| What you need | What ScreenPilot provides |
-| --- | --- |
-| Less light from one screen | Native/DDC brightness where available; clearly labeled software dimming otherwise |
-| A dark screen without rearranging windows | A reversible black overlay that preserves the desktop layout |
-| Fewer active desktops | Stop selected Mac outputs, retaining at least one active screen |
-| Repeatable screen combinations | Named output presets, a built-in-screen shortcut, and brightness/blackout scenes |
-| A way back | Per-screen reconnect, restore-all, an independent recovery helper, and `⌃⌥⌘ R` |
-| A shared Mac/Windows monitor | Windows local input buttons; configured LAN pairing and USB arrival coordination |
-| Local control | No account or analytics; pairing and startup are configured by you |
 
 ## Download and install
 
@@ -143,22 +157,37 @@ See [contributors](CONTRIBUTORS.md). Original code and artwork are currently **a
 [![English](https://img.shields.io/badge/Language-English-24292f)](#english)
 [![简体中文](https://img.shields.io/badge/语言-简体中文-1677ff)](#中文)
 
-**Mac 原生显示器控制中心，可配合 Windows 程序使用。**
-逐屏调节亮度、保存关屏组合，从菜单栏恢复工作空间。对于已明确配置并验证的共享显示器，可通过 Windows 配对程序，在共享 USB 键鼠切换主机时联动显示器输入。
+**一张桌面，多块屏幕。切换更顺手，专注更简单，恢复有入口。**
+屏幕管家把逐屏亮度、关屏预设和兼容设备的 Mac/Windows 输入切换，集中到一个 Mac 原生控制中心，并提供可选的 Windows 配套程序。让需要的屏幕继续工作，让闲置屏幕有机会进入休眠，再从菜单栏找回工作空间。
+
+### 为什么需要屏幕管家
+
+**画面变黑，不代表显示器已经关闭。** LCD 显示器即使显示纯黑壁纸或被软件黑色遮罩覆盖，背光仍可能亮着：暗处看得见泛光，也仍在耗电。而当桌上有几块显示器、两台电脑时，切换输入源、逐屏调亮度、调整 Mac 桌面，往往又要分别操作显示器菜单和系统设置。
+
+屏幕管家把这些日常操作放在一起：想暂时不看某块屏幕、保留窗口布局，就用**软件黑屏**；想停用闲置桌面，让兼容显示器在无信号后进入待机，就用**停止 Mac 输出**。是否真正待机、能节省多少电，取决于显示器及其他输入是否仍有信号；本项目没有宣称实测节电比例。
+
+### 哪些场景更方便
+
+| 你的使用场景 | 屏幕管家怎么帮你 |
+| --- | --- |
+| 白天三屏办公，晚上只想用笔记本 | 点击“仅用内置屏”，或执行保存的关屏预设，减少逐根拔线的操作 |
+| 闲置 LCD 已经是黑色画面，晚上却依旧泛光 | 停止其 Mac 输出，让兼容显示器进入无信号待机；更看重保留布局时，则使用软件黑屏 |
+| Mac 处理工作，Windows 运行另一套应用，共用一块显示器 | 配置实测映射和局域网配对后，通过应用协调输入切换，减少反复摸索显示器实体按键 |
+| 用 USB 切换器在两台电脑间共用键盘、鼠标 | 配置后，键鼠接入可触发配对的显示器切源流程，减少再手动选择一次输入源的步骤 |
+| 经常在完整工作台与夜间阅读之间切换 | 保存常用关屏组合，以及亮度/黑屏场景，需要时直接应用 |
+| 想尝试新的屏幕组合，又担心找不回桌面 | 先用倒计时恢复；也可单屏重连，通过菜单栏或 `⌃⌥⌘ R` 恢复全部 |
+
+### 它的优势在哪里
+
+- **把整张桌面的设备协调起来。** 逐屏亮度、Mac 活动输出和配置后的 Windows 配套程序组成连续操作流程。配套程序可以从 Windows 一侧请求切源，适用于部分显示器不再接受非当前 Mac 输入命令的情况；具体效果仍取决于显示器兼容性。
+- **分清“画面黑了”和“输出停了”。** 软件黑屏保留桌面，停止输出则可能让闲置 LCD 进入待机。你可以根据布局、光线和节能需求选择操作，不会把所有黑色画面都误当成关机。
+- **常用组合少点几次，恢复路径随时可见。** 命名预设、仅用内置屏、定时恢复和独立恢复程序，减少重复设置。操作会保留至少一块 Mac 活动屏幕；恢复失败会明确提示，而不是默认成功。
+
+支持的设备可使用**原生/DDC 硬件亮度**，不支持时提供明确标注的**软件调暗**。无需账户，无分析遥测；配对与开机启动由你主动设置。
+
+**跨主机配置要求：** 公开包不包含个人显示器映射。Mac/Windows 主机按钮和 USB 自动切换需要本地实测映射、重新构建及局域网配对，见[硬件配置说明](docs/hardware-setup.md)。它协调已有视频连线与实体 USB 切换器，不负责在电脑之间传输视频或键鼠数据。
 
 软件界面目前为**简体中文**。本页提供完整中英说明；点击语言徽标直接跳到当前 README 对应位置，不打开另一份 Markdown。
-
-### 能做什么
-
-| 使用场景 | 功能 |
-| --- | --- |
-| 降低某块屏幕的亮度 | 支持时使用原生/DDC 背光，否则明确标注软件调暗 |
-| 暂时黑屏，保留桌面 | 可恢复的软件黑色遮罩 |
-| 减少活动桌面 | 停止指定 Mac 输出，始终保留至少一块活动屏幕 |
-| 一键使用固定组合 | 自定义关屏预设、仅用内置屏、亮度与黑屏场景 |
-| 找回屏幕 | 单屏重连、恢复全部、独立恢复程序与 `⌃⌥⌘ R` |
-| 共用 Mac/Windows 显示器 | Windows 本地切源；配置后支持局域网与 USB 接入联动 |
-| 保持本地使用 | 无需账户、无分析遥测；配对和开机启动由你设置 |
 
 ### 下载与安装
 
