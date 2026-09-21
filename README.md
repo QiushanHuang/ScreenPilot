@@ -63,6 +63,10 @@ The Windows executable is **not Authenticode signed**. If your OS blocks launch,
 
 **Windows:** extract the entire ZIP, run `ScreenPilotBridge.exe`, and choose the shared monitor. Use **安装到本机并创建桌面入口** to install for the current user. Startup is opt-in through **设置开机启动**. Close minimizes to the tray; use the tray's **退出** to exit. No compiler is needed for the ready-to-run ZIP.
 
+## Dock and window visibility
+
+Use **Settings → General → Dock 与窗口 → 在 Dock 中显示应用** to show or hide the Dock icon. The menu-bar controls remain available. Press **⌘H** to hide the app window; reopen it from the menu bar or Dock. This keeps your display controls running.
+
 ## Start here
 
 1. Open **显示器** and click **识别屏幕** to match cards with physical screens. Give identical monitors distinct names.
@@ -208,6 +212,10 @@ Mac 版本为 **ad-hoc 签名，未使用 Developer ID 签名、未经过 Apple 
 **Mac：** 打开 DMG，将**屏幕管家.app** 拖入 Applications，推出磁盘映像后启动应用。关闭窗口仍保留菜单栏控制；退出应用会尝试恢复遮罩和已停止的输出。
 
 **Windows：** 完整解压，双击 `ScreenPilotBridge.exe`，选择共享显示器。点击**安装到本机并创建桌面入口**完成当前用户安装；**设置开机启动**为主动选择。关闭窗口收起到托盘，托盘**退出**才完全结束。即用包不需要编译器。
+
+### Dock 与窗口
+
+在**设置与诊断 → 通用 → Dock 与窗口**中，可切换**在 Dock 中显示应用**。关闭后仍可从菜单栏打开。按 **⌘H** 隐藏应用窗口，屏幕控制继续运行；点击菜单栏入口或 Dock 图标即可重新打开。
 
 ### 快速开始
 

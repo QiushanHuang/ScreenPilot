@@ -29,7 +29,7 @@ if [ ! -f .build/ScreenPilot.icns ] || [ scripts/make-icon.swift -nt .build/Scre
     swift scripts/make-icon.swift .build/ScreenPilot.iconset
     iconutil -c icns .build/ScreenPilot.iconset -o .build/ScreenPilot.icns
 fi
-cp .build/ScreenPilot.icns "$app_dir/Contents/Resources/ScreenPilot.icns"
+cp .build/ScreenPilot.icns "$app_dir/Contents/Resources/ScreenPilotBrand-v2.icns"
 cat > "$app_dir/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -40,10 +40,10 @@ cat > "$app_dir/Contents/Info.plist" <<'PLIST'
 <key>CFBundleExecutable</key><string>ScreenPilot</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>1.6.3</string>
-<key>CFBundleVersion</key><string>14</string>
+<key>CFBundleVersion</key><string>15</string>
 <key>NSHumanReadableCopyright</key><string>© 2026 QiushanHuang</string>
 <key>SPCopyrightOwner</key><string>QiushanHuang</string>
-<key>CFBundleIconFile</key><string>ScreenPilot</string>
+<key>CFBundleIconFile</key><string>ScreenPilotBrand-v2</string>
 <key>LSMinimumSystemVersion</key><string>14.0</string>
 <key>NSHighResolutionCapable</key><true/>
 <key>NSPrincipalClass</key><string>NSApplication</string>

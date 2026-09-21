@@ -15,12 +15,21 @@ import DisplayCore
     var hotKey: EventHotKeyRef?
     var eventHandler: EventHandlerRef?
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.regular)
+        UserDefaults.standard.register(defaults:["appearance.showDockIcon":true])
+        applyDockAppearance()
+        NotificationCenter.default.addObserver(self,selector:#selector(applyDockAppearance),name:UserDefaults.didChangeNotification,object:UserDefaults.standard)
         buildMenu(); registerRecoveryHotKey(); showWindow()
         Task { await store.refresh() }
         if CommandLine.arguments.contains("--ui-smoke") { Task { await smoke() } }
         if CommandLine.arguments.contains("--connection-smoke") { Task { await connectionSmoke() } }
         if CommandLine.arguments.contains("--connection-group-smoke") { Task { await connectionGroupSmoke() } }
+    }
+    @objc func applyDockAppearance() {
+        let policy: NSApplication.ActivationPolicy = UserDefaults.standard.bool(forKey:"appearance.showDockIcon") ? .regular : .accessory
+        if NSApp.activationPolicy() != policy { NSApp.setActivationPolicy(policy) }
+        if let url=Bundle.main.url(forResource:"ScreenPilotBrand-v2",withExtension:"icns"),let icon=NSImage(contentsOf:url) {
+            NSApp.applicationIconImage=icon
+        }
     }
     func applicationShouldHandleReopen(_ sender:NSApplication,hasVisibleWindows:Bool)->Bool { showWindow(); return true }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender:NSApplication)->Bool { false }
@@ -41,6 +50,7 @@ import DisplayCore
             let size=NSSize(width:min(w.frame.width,area.width-32),height:min(w.frame.height,area.height-32))
             w.setFrame(NSRect(x:area.midX-size.width/2,y:area.midY-size.height/2,width:size.width,height:size.height),display:true)
         }
+        NSApp.unhide(nil)
         window?.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps:true)
     }
     @objc func showSettings() {
@@ -86,6 +96,8 @@ import DisplayCore
         appMenu.addItem(withTitle:"显示屏幕管家",action:#selector(showWindow),keyEquivalent:"0").target=self
         let recovery=appMenu.addItem(withTitle:"恢复所有屏幕",action:#selector(restoreAll),keyEquivalent:"r")
         recovery.target=self; recovery.keyEquivalentModifierMask=[.control,.option,.command]
+        appMenu.addItem(.separator())
+        appMenu.addItem(withTitle:"隐藏屏幕管家",action:#selector(NSApplication.hide(_:)),keyEquivalent:"h").target=NSApp
         appMenu.addItem(.separator()); appMenu.addItem(withTitle:"退出屏幕管家",action:#selector(quit),keyEquivalent:"q").target=self
         main.addItem(appItem); main.setSubmenu(appMenu,for:appItem)
         let editItem=NSMenuItem(title:"编辑",action:nil,keyEquivalent:""); let edit=NSMenu(title:"编辑")

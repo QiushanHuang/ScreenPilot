@@ -5,6 +5,7 @@ import DisplayCore
 private let accent=AppPalette.accent
 struct Dashboard: View {
     @ObservedObject var store: DisplayStore
+    @AppStorage("appearance.showDockIcon") private var showDockIcon=true
     @AppStorage("appearance.mode") private var appearanceMode="light"
     @AppStorage("host.layoutMode") private var hostLayout=HostLayoutMode.keep.rawValue
     @State private var settingsCategory=0
@@ -147,6 +148,10 @@ struct Dashboard: View {
                     Picker("应用外观",selection:$appearanceMode) {
                         Text("浅色").tag("light");Text("深色").tag("dark");Text("跟随系统").tag("system")
                     }.pickerStyle(.segmented).frame(maxWidth:420)
+                }
+                settingBlock("Dock 与窗口",icon:"dock.rectangle") {
+                    Toggle("在 Dock 中显示应用",isOn:$showDockIcon)
+                    Text("关闭后仍可从菜单栏打开屏幕管家。按 ⌘H 隐藏窗口，屏幕控制继续运行。")
                 }
                 settingBlock("主机切换与布局",icon:"rectangle.3.group") {
                     Picker("手动切到 Windows 时",selection:$hostLayout) {
