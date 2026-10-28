@@ -46,7 +46,7 @@ Interface language: **Simplified Chinese**.
 
 ## Download and install
 
-Get **v1.6.3** from [Releases](https://github.com/QiushanHuang/ScreenPilot/releases/latest).
+The repository contains the upcoming **v1.6.4** update; see its [release notes](docs/releases/v1.6.4.md). The latest published download remains **v1.6.3** at [Releases](https://github.com/QiushanHuang/ScreenPilot/releases/latest).
 
 | Download | For |
 | --- | --- |
@@ -72,7 +72,7 @@ Use **Settings → General → Dock 与窗口 → 在 Dock 中显示应用** to 
 1. Open **显示器** and click **识别屏幕** to match cards with physical screens. Give identical monitors distinct names.
 2. Adjust brightness on one card. Software dimming changes the visible image, not the physical backlight or its power use.
 3. Try **黑屏** for a 12-second preview; confirm to keep it. Click the black area to recover.
-4. For output disconnection, first choose **设置与诊断 → 通用 → 停止输出后的恢复 → 15 秒后恢复**. Stop one output and check both the screen and its restoration before saving a persistent setup.
+4. For output disconnection, first choose **设置与诊断 → 通用 → 停止输出后 → 15 秒后恢复**. Stop one output and check both the screen and its restoration before saving a persistent setup.
 5. In **预设**, create a named group and choose timed or manual recovery. Saving does not execute it. Brightness/blackout scenes are separate and never switch input or power.
 
 **Recovery: `Control + Option + Command + R` (`⌃⌥⌘ R`).**
@@ -197,7 +197,7 @@ See [contributors](CONTRIBUTORS.md). Original code and artwork: **all rights res
 
 ### 下载与安装
 
-从 [Releases](https://github.com/QiushanHuang/ScreenPilot/releases/latest) 下载 **v1.6.3**。
+仓库源码已更新至待发布的 **v1.6.4**，详见[更新说明](docs/releases/v1.6.4.md)。[Releases](https://github.com/QiushanHuang/ScreenPilot/releases/latest) 当前提供的最新下载仍为 **v1.6.3**。
 
 | 文件 | 用途 |
 | --- | --- |
@@ -222,7 +222,7 @@ Mac 版本为 **ad-hoc 签名，未使用 Developer ID 签名、未经过 Apple 
 1. 在**显示器**页点击**识别屏幕**，对应实体屏幕；为同名设备分别命名。
 2. 从单块屏幕开始调整亮度。软件调暗只改变画面，不降低真实背光与其功耗。
 3. 点击**黑屏**先预览 12 秒，确认后保持。点击黑屏区域即可恢复。
-4. 测试停止输出前，先在**设置与诊断 → 通用 → 停止输出后的恢复**选择**15 秒后恢复**。逐屏确认关闭与恢复后，再使用持续关闭。
+4. 测试停止输出前，先在**设置与诊断 → 通用 → 停止输出后**选择**15 秒后恢复**。逐屏确认关闭与恢复后，再使用持续关闭。
 5. 在**预设**中保存关屏组合及定时/手动恢复方式，保存不会立即执行。亮度与黑屏场景单独保存，不切换输入或硬件电源。
 
 **紧急恢复：`Control + Option + Command + R`，即 `⌃⌥⌘ R`。**

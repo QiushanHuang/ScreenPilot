@@ -18,7 +18,6 @@ public static partial class ScreenPilotBridge {
     static void PopulateAbout(FlowLayoutPanel panel) {
         panel.Controls.Add(new Label { Text="屏幕管家 · ScreenPilot",AutoSize=true,Font=new Font("Segoe UI",18,FontStyle.Bold),Margin=new Padding(0,0,0,12) });
         panel.Controls.Add(new Label { Text="Windows 版  "+ProductVersion,AutoSize=true });
-        panel.Controls.Add(new Label { Text="共享显示器输入切换 · USB 接入联动 · 局域网配对",AutoSize=true,MaximumSize=new Size(580,0),Margin=new Padding(0,12,0,12) });
         panel.Controls.Add(new Label { Text="开发与版权：QiushanHuang\n© 2026 QiushanHuang",AutoSize=true,Margin=new Padding(0,0,0,8) });
         var link=new LinkLabel { Text="github.com/QiushanHuang",AutoSize=true,LinkColor=Color.FromArgb(13,110,87),Margin=new Padding(0,0,0,18) };
         link.LinkClicked+=delegate {
@@ -28,7 +27,6 @@ public static partial class ScreenPilotBridge {
         panel.Controls.Add(link);
         panel.Controls.Add(new Label { Text="第三方说明与许可",AutoSize=true,Font=new Font("Segoe UI",11,FontStyle.Bold) });
         panel.Controls.Add(new TextBox { Text=ThirdPartyNotices(),Multiline=true,ReadOnly=true,ScrollBars=ScrollBars.Vertical,Width=580,Height=180,BorderStyle=BorderStyle.FixedSingle,BackColor=Color.White,WordWrap=true });
-        panel.Controls.Add(new Label { Text="配对密钥保存在当前用户配置中。关于页面不会发送显示器命令。",AutoSize=true,MaximumSize=new Size(580,0),ForeColor=Color.DimGray,Margin=new Padding(0,12,0,0) });
     }
     static void ShowAbout(IWin32Window owner) {
         using(var icon=BrandIcon())

@@ -39,8 +39,8 @@ cat > "$app_dir/Contents/Info.plist" <<'PLIST'
 <key>CFBundleDisplayName</key><string>屏幕管家</string>
 <key>CFBundleExecutable</key><string>ScreenPilot</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>1.6.3</string>
-<key>CFBundleVersion</key><string>15</string>
+<key>CFBundleShortVersionString</key><string>1.6.4</string>
+<key>CFBundleVersion</key><string>16</string>
 <key>NSHumanReadableCopyright</key><string>© 2026 QiushanHuang</string>
 <key>SPCopyrightOwner</key><string>QiushanHuang</string>
 <key>CFBundleIconFile</key><string>ScreenPilotBrand-v2</string>

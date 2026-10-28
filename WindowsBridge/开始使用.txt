@@ -1,4 +1,4 @@
-屏幕管家 Windows 1.6.3
+屏幕管家 Windows 1.6.4
 
 1. 解压整个压缩包，双击 ScreenPilotBridge.exe。无需旧文件夹、编译器或管理员权限。
 2. 首次打开选择共享显示器（Mac HDMI 1 / Windows HDMI 2）。已有配置会自动保留。

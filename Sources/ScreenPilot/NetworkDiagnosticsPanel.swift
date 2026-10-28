@@ -9,12 +9,11 @@ struct NetworkDiagnosticsPanel:View {
         VStack(alignment:.leading,spacing:14) {
             HStack { Label("局域网与网络诊断",systemImage:"network").font(.headline);Spacer();Toggle("暂停联动",isOn:$bridge.paused).toggleStyle(.switch).fixedSize() }
             Text(bridge.paused ? "已停止新的联动请求；显示器亮度、黑屏和停止输出仍可使用。" : bridge.status).font(.callout).foregroundStyle(.secondary)
-            Text("联动只访问配对电脑，不修改 DNS、代理、网关或防火墙。连接失败时自动降低重试频率。").font(.caption).foregroundStyle(.secondary)
             HStack {
-                Button(running ? "检查中…" : "检查此 Mac 网络") { run() }.disabled(running)
+                Button(running ? "检查中…" : "检查网络（含 Apple 连接）") { run() }.disabled(running)
+                    .help("检查本机网络状态和到 apple.com 的 HTTPS 连接，不切换显示器")
                 if !result.isEmpty { Button("导出结果…") { export() } }
                 Spacer()
-                Text("只读检查，不切换显示器").font(.caption).foregroundStyle(.secondary)
             }
             if !result.isEmpty { DisclosureGroup("查看诊断结果") { Text(result).font(.system(size:11,design:.monospaced)).textSelection(.enabled).frame(maxWidth:.infinity,alignment:.leading) } }
         }.padding(20).background(AppPalette.surface,in:RoundedRectangle(cornerRadius:14))

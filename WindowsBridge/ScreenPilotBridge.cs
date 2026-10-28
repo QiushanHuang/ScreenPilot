@@ -19,8 +19,8 @@ using Microsoft.Win32;
 [assembly: AssemblyProduct("ScreenPilot")]
 [assembly: AssemblyTitle("屏幕管家 · ScreenPilot")]
 [assembly: AssemblyDescription("显示器输入切换与 USB 局域网联动 · QiushanHuang")]
-[assembly: AssemblyVersion("1.6.3.0")]
-[assembly: AssemblyFileVersion("1.6.3.0")]
+[assembly: AssemblyVersion("1.6.4.0")]
+[assembly: AssemblyFileVersion("1.6.4.0")]
 
 public static partial class ScreenPilotBridge {
     const int Port=43871;
@@ -193,7 +193,7 @@ public static partial class ScreenPilotBridge {
                 var listener=new TcpListener(IPAddress.Parse(settings.ListenIP),Port);listener.Start(4);
                 NetworkStatus="网络服务："+settings.ListenIP+":"+Port;Log("server_started",settings.ListenIP);
                 while(true) using(var client=listener.AcceptTcpClient()) { try { Handle(client,settings); } catch(Exception e) { Log("network_error",e.GetType().Name); } }
-            } catch(Exception e) { NetworkStatus="网络服务不可用，本地/USB仍可使用";Log("network_unavailable",e.GetType().Name); }
+            } catch(Exception e) { NetworkStatus="网络服务不可用 · USB 自动切换暂停";Log("network_unavailable",e.GetType().Name); }
         });thread.IsBackground=true;thread.Start();
     }
     static void Reply(NetworkStream stream,Settings settings,string nonce,int status,string body) {
@@ -269,7 +269,7 @@ public static partial class ScreenPilotBridge {
                 System.Windows.Forms.Application.EnableVisualStyles();
                 Settings settings=File.Exists(ConfigFile)?Load(false):SetupLocal();
                 if(settings==null) return 0;
-                if(mode=="--setup") settings=SetupNetworkWindow(settings);
+                if(mode=="--setup") SetupNetworkWindow(settings);
                 if(mode=="--local") ForceLocalOnly=true;
                 LoadNonces();Log("ui_started","mode="+mode+" auto="+settings.AutoEnabled);
                 StartOptionalNetwork(settings);

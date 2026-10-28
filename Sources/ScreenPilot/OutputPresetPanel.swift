@@ -7,7 +7,7 @@ struct RecoveryPicker:View {
         Picker("自动恢复",selection:$mode) {
             Text("15 秒后恢复").tag(OutputRecoveryMode.preview)
             Text("不自动恢复").tag(OutputRecoveryMode.manual)
-        }.pickerStyle(.segmented).frame(maxWidth:320)
+        }.labelsHidden().pickerStyle(.segmented).frame(maxWidth:320)
     }
 }
 struct OutputPresetPanel:View {
@@ -16,15 +16,15 @@ struct OutputPresetPanel:View {
     @State private var editingID:UUID?
     @State private var name=""
     @State private var selected=Set<String>()
-    @State private var recovery=OutputRecoveryMode.manual
-    private var busy:Bool { store.scanning || store.connectionBusy || store.hostSwitchBusy }
+    @State private var recovery=OutputRecoveryMode.preview
+    @State private var presetToDelete:OutputPreset?
+    @State private var confirmingDelete=false
+    private var busy:Bool { store.scanning || store.connectionBusy || store.hostSwitchBusy || store.connectionRecoveryFailed }
     var body:some View {
         VStack(alignment:.leading,spacing:20) {
             HStack {
-                VStack(alignment:.leading,spacing:6) {
-                    Text("常用组合，一键执行").font(.title3.weight(.semibold))
-                    Text("保存常用的关屏组合，执行时保留至少一块输出屏幕。").font(.callout).foregroundStyle(.secondary)
-                }
+                Text("停止输出预设").font(.title3.weight(.semibold))
+                InfoTip(title:"停止输出预设",message:"执行预设会停止所选屏幕的 Mac 输出，桌面可能重新排列。至少保留一块正在输出的屏幕。")
                 Spacer()
                 Button { openEditor(nil) } label: { Label("新建预设",systemImage:"plus") }.buttonStyle(.borderedProminent).controlSize(.large)
             }
@@ -35,10 +35,10 @@ struct OutputPresetPanel:View {
                     Text("停止所有外屏输出 · \(store.outputRecovery.automaticallyRestores ? "15 秒后恢复" : "手动恢复")").font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("执行") { Task { await store.onlyBuiltIn() } }.buttonStyle(.bordered).controlSize(.large).disabled(busy || !store.displays.contains { $0.builtIn && !$0.isDisconnected })
+                Button("停止外屏输出") { Task { await store.onlyBuiltIn() } }.buttonStyle(.bordered).controlSize(.large).disabled(busy || !store.displays.contains { $0.builtIn && !$0.isDisconnected })
             }.padding(22).background(AppPalette.surface,in:RoundedRectangle(cornerRadius:16))
             if store.outputPresets.isEmpty {
-                ContentUnavailableView("还没有自定义预设",systemImage:"rectangle.stack.badge.plus",description:Text("点击右上角“新建预设”，选择要关闭的屏幕。"))
+                ContentUnavailableView("还没有自定义预设",systemImage:"rectangle.stack.badge.plus")
             } else {
                 ForEach(store.outputPresets) { preset in
                     HStack(spacing:16) {
@@ -48,23 +48,35 @@ struct OutputPresetPanel:View {
                             Text("停止 \(preset.targets.count) 块屏幕 · \(preset.recovery.automaticallyRestores ? "15 秒后恢复" : "手动恢复")").font(.caption).foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Button("执行") { Task { await store.applyOutputPreset(preset) } }.buttonStyle(.borderedProminent).controlSize(.large).disabled(busy)
+                        Button("执行预设") { Task { await store.applyOutputPreset(preset) } }
+                            .accessibilityLabel("执行预设 \(preset.name)")
+                            .buttonStyle(.borderedProminent).controlSize(.large).disabled(busy)
                         Menu {
                             Button("编辑预设…") { openEditor(preset) }
-                            Button("删除预设",role:.destructive) { store.deleteOutputPreset(preset.id) }
-                        } label: { Image(systemName:"ellipsis") }.menuStyle(.borderlessButton).fixedSize().help("预设选项")
+                            Button("删除预设…",role:.destructive) { presetToDelete=preset;confirmingDelete=true }
+                        } label: { Image(systemName:"ellipsis") }.menuStyle(.borderlessButton).fixedSize()
+                            .accessibilityLabel("\(preset.name)预设选项").help("预设选项")
                     }.padding(22).background(AppPalette.surface,in:RoundedRectangle(cornerRadius:16))
                 }
             }
         }.sheet(isPresented:$editing) { editor }
+        .alert("删除预设？",isPresented:$confirmingDelete,presenting:presetToDelete) { preset in
+            Button("删除",role:.destructive) { store.deleteOutputPreset(preset.id) }
+            Button("取消",role:.cancel) { }
+        } message: { preset in
+            Text("“\(preset.name)”将永久删除，无法撤销。当前屏幕状态不会改变。")
+        }
     }
     private func openEditor(_ preset:OutputPreset?) {
-        editingID=preset?.id;name=preset?.name ?? "";selected=Set(preset?.targets.map(\.uuid) ?? []);recovery=preset?.recovery ?? .manual;editing=true
+        editingID=preset?.id;name=preset?.name ?? "";selected=Set(preset?.targets.map(\.uuid) ?? []);recovery=preset?.recovery ?? .preview;editing=true
     }
     private var editor:some View {
         VStack(alignment:.leading,spacing:20) {
             HStack { Text(editingID==nil ? "新建关屏预设" : "编辑关屏预设").font(.title2.bold());Spacer() }
-            TextField("预设名称",text:$name).textFieldStyle(.roundedBorder)
+            VStack(alignment:.leading,spacing:6) {
+                Text("预设名称").font(.callout.weight(.medium))
+                TextField("例如：只用内置屏",text:$name).textFieldStyle(.roundedBorder).accessibilityLabel("预设名称")
+            }
             Text("选择要停止输出的屏幕").font(.headline)
             ScrollView {
                 VStack(alignment:.leading,spacing:16) {
@@ -80,8 +92,13 @@ struct OutputPresetPanel:View {
                 }.padding(2)
             }.frame(maxHeight:240)
             Divider()
-            RecoveryPicker(mode:$recovery)
-            Text("不自动恢复时将保持停止输出，直到手动恢复或退出应用。保存不会立即关屏。").font(.caption).foregroundStyle(.secondary)
+            HStack {
+                Text("恢复方式").font(.callout.weight(.medium))
+                InfoTip(title:"恢复方式",message:"不自动恢复时，屏幕会保持停止输出，直到手动恢复或退出应用。执行预设时至少保留一块输出屏幕。")
+                Spacer()
+                RecoveryPicker(mode:$recovery)
+            }
+            Text("保存后不会立即停止输出。").font(.caption).foregroundStyle(.secondary)
             HStack {
                 Spacer();Button("取消") { editing=false }.keyboardShortcut(.cancelAction)
                 Button("保存预设") {

@@ -1,4 +1,4 @@
-# ScreenPilot 1.6.3 使用说明
+# ScreenPilot 1.6.4 使用说明
 
 当前 USB 自动切换使用配对局域网，旧版离线说明已不适用。Windows 本地手动切源按钮独立可用。
 

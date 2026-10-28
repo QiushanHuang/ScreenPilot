@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-version=1.6.3
+version=1.6.4
 release_dir="$PWD/dist/release-$version"
 app_dir="$release_dir/屏幕管家.app"
 mkdir -p "$release_dir"

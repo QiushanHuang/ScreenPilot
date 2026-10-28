@@ -19,7 +19,7 @@ import DisplayCore
         var q=query; q[kSecReturnData as String]=true; q[kSecMatchLimit as String]=kSecMatchLimitOne
         var result:CFTypeRef?; guard SecItemCopyMatching(q as CFDictionary,&result)==errSecSuccess,let data=result as? Data,data.count==32 else { return nil }; return data
     }
-    func save(code:String) {
+    @discardableResult func save(code:String) -> Bool {
         do {
             let pair=try BridgePairing(code:code)
             var result=SecItemUpdate(query as CFDictionary,[kSecValueData as String:pair.key] as CFDictionary)
@@ -31,7 +31,8 @@ import DisplayCore
             host=pair.host; port=pair.port; paired=true
             UserDefaults.standard.set(host,forKey:"bridge.host"); UserDefaults.standard.set(port,forKey:"bridge.port")
             status="配对已保存，点击测试连接"
-        } catch { status=error.localizedDescription }
+            return true
+        } catch { status=error.localizedDescription; return false }
     }
     func check() async {
         do { _=try await perform(.health); status="Windows 程序已连接，签名校验通过" }

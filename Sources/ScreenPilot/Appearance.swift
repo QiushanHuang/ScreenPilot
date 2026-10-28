@@ -7,7 +7,11 @@ enum AppPalette {
         ? NSColor(calibratedRed:0.47,green:0.91,blue:0.77,alpha:1)
         : NSColor(calibratedRed:0.05,green:0.43,blue:0.34,alpha:1)
     })
-    static let canvas=Color(nsColor:.windowBackgroundColor)
+    static let canvas=Color(nsColor:NSColor(name:nil) { appearance in
+        appearance.bestMatch(from:[.darkAqua,.aqua]) == .darkAqua
+        ? NSColor(calibratedWhite:0.105,alpha:1)
+        : NSColor(calibratedWhite:0.95,alpha:1)
+    })
     static let surface=Color(nsColor:.controlBackgroundColor)
     static let sidebar=Color(nsColor:NSColor(name:nil) { appearance in
         appearance.bestMatch(from:[.darkAqua,.aqua]) == .darkAqua

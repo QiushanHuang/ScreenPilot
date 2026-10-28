@@ -32,8 +32,8 @@ public static partial class ScreenPilotBridge {
         var screens=Screens();
         try {
             using(var form=new Form { Icon=BrandIcon(), Text="欢迎使用屏幕管家",ClientSize=new Size(580,220),StartPosition=FormStartPosition.CenterScreen,Font=new Font("Segoe UI",10),FormBorderStyle=FormBorderStyle.FixedDialog,MaximizeBox=false,MinimizeBox=false }) {
-                var text=new Label { Text="选择同时连接 Mac HDMI 1 / Windows HDMI 2 的显示器。\nUSB 自动切换无需网络，稍后在主窗口选择共享键鼠。",Left=20,Top=20,Width=540,Height=55 };
-                var choice=new ComboBox { Left=20,Top=85,Width=540,DropDownStyle=ComboBoxStyle.DropDownList };
+                var text=new Label { Text="选择同时连接 Mac HDMI 1 和 Windows HDMI 2 的显示器",Left=20,Top=25,Width=540,Height=42 };
+                var choice=new ComboBox { Left=20,Top=70,Width=540,DropDownStyle=ComboBoxStyle.DropDownList,AccessibleName="共享显示器" };
                 foreach(var screen in screens) choice.Items.Add(screen.Physical.Description+" · "+screen.Device);
                 if(screens.Count>0) choice.SelectedIndex=0;
                 var ok=new Button { Text="开始使用",Left=430,Top=160,Width=130,DialogResult=DialogResult.OK,Enabled=screens.Count>0 };
@@ -111,7 +111,7 @@ public static partial class ScreenPilotBridge {
         readonly Label state=new Label(),netState=new Label(),deviceState=new Label();
         readonly ComboBox keyboard=new ComboBox(),mouse=new ComboBox(),mode=new ComboBox();
         readonly CheckBox automatic=new CheckBox(); readonly ArrivalGate gate=new ArrivalGate(); readonly Stopwatch clock=Stopwatch.StartNew();
-        string inventoryKey=""; bool updating,exitRequested; readonly bool startHidden;
+        string inventoryKey=""; bool updating,exitRequested,networkRestartRequired; readonly bool startHidden;
         static FlowLayoutPanel Page(TabControl tabs,string title) {
             var page=new TabPage(title) { Padding=new Padding(8),BackColor=Color.White };
             var flow=new FlowLayoutPanel { Dock=DockStyle.Fill,FlowDirection=FlowDirection.TopDown,WrapContents=false,AutoScroll=true,Padding=new Padding(18) };
@@ -120,43 +120,61 @@ public static partial class ScreenPilotBridge {
         public ControlPanel(Settings s,bool hidden) {
             settings=s; startHidden=hidden;
             Icon=BrandIcon();
-            Text="ScreenPilot "+ProductVersion+" · 显示器控制"; Size=new Size(750,620); MinimumSize=new Size(710,560); Font=new Font("Segoe UI",10); StartPosition=FormStartPosition.CenterScreen;
+            Text="屏幕管家"; Size=new Size(750,620); MinimumSize=new Size(710,560); Font=new Font("Segoe UI",10); StartPosition=FormStartPosition.CenterScreen;
             var tabs=new TabControl { Dock=DockStyle.Fill,Padding=new Point(22,10) };Controls.Add(tabs);
-            state.Dock=DockStyle.Bottom;state.Height=66;state.Padding=new Padding(20,12,20,8);state.BackColor=Color.FromArgb(237,243,241);Controls.Add(state);
+            state.Dock=DockStyle.Bottom;state.Height=54;state.Padding=new Padding(20,12,20,8);state.BackColor=Color.FromArgb(237,243,241);Controls.Add(state);
             var layout=Page(tabs,"显示器");
             var brand=new FlowLayoutPanel { AutoSize=true,WrapContents=false,Margin=new Padding(0,0,0,18) };
             brand.Controls.Add(new PictureBox { Image=Icon.ToBitmap(),SizeMode=PictureBoxSizeMode.Zoom,Width=44,Height=44 });
-            brand.Controls.Add(new Label { Text="屏幕管家  /  SCREEN PILOT",AutoSize=true,Font=new Font("Segoe UI",15,FontStyle.Bold),Margin=new Padding(12,8,0,0) });layout.Controls.Add(brand);
-            layout.Controls.Add(new Label { Text="共享显示器："+s.Description,AutoSize=true });
-            layout.Controls.Add(new Label { Text="本机约定：Windows = HDMI 2，Mac = HDMI 1",AutoSize=true });
-            var buttons=new FlowLayoutPanel { AutoSize=true,WrapContents=false };
-            var mac=new Button { Text="切到 Mac · HDMI 1",AutoSize=true }; mac.Click+=delegate { Request(17,"local-button"); }; buttons.Controls.Add(mac);
-            var win=new Button { Text="显示 Windows · HDMI 2",AutoSize=true }; win.Click+=delegate { Request(18,"local-button"); }; buttons.Controls.Add(win); layout.Controls.Add(buttons);
-            state.Text="就绪 · 本地按钮直接控制显示器，不使用网络。";
-            layout.Controls.Add(new Label { Text="本地按钮用于从当前主机切走；自动跟随键鼠请在 USB 联动页配置。",AutoSize=true,MaximumSize=new Size(620,0),Margin=new Padding(0,18,0,12) });
+            brand.Controls.Add(new Label { Text="显示器",AutoSize=true,Font=new Font("Segoe UI",18,FontStyle.Bold),Margin=new Padding(12,6,0,0) });layout.Controls.Add(brand);
+            layout.Controls.Add(new Label { Text=s.Description,AutoSize=true,Font=new Font("Segoe UI",12,FontStyle.Bold),Margin=new Padding(0,0,0,12) });
+            var buttons=new FlowLayoutPanel { AutoSize=true,WrapContents=false,Margin=new Padding(0,0,0,12) };
+            var mac=new Button { Text="切到 Mac · HDMI 1",AutoSize=true,MinimumSize=new Size(180,40) }; mac.Click+=delegate { Request(17,"local-button"); }; buttons.Controls.Add(mac);
+            var win=new Button { Text="切到 Windows · HDMI 2",AutoSize=true,MinimumSize=new Size(180,40) }; win.Click+=delegate { Request(18,"local-button"); }; buttons.Controls.Add(win); layout.Controls.Add(buttons);
+            state.Text="本地控制已就绪";
             layout=Page(tabs,"USB 联动");
-            layout.Controls.Add(new Label { Text="USB 局域网联动（接入 Windows 后请 Mac 切到 HDMI 2）",AutoSize=true,Margin=new Padding(0,18,0,3) });
+            var usbHeading=new FlowLayoutPanel { AutoSize=true,WrapContents=false,Margin=new Padding(0,0,0,12) };
+            usbHeading.Controls.Add(new Label { Text="USB 自动切换",AutoSize=true,Font=new Font("Segoe UI",15,FontStyle.Bold),Margin=new Padding(0,4,8,0) });
+            var usbInfo=new Button { Text="ⓘ",Width=32,Height=30,AccessibleName="USB 自动切换说明" };
+            usbInfo.Click+=delegate { MessageBox.Show(this,"两台电脑需要完成局域网配对并启用自动切换。接入 Windows 后由 Mac 请求切到 HDMI 2。启动或拔出不会切屏；只检测设备连接，不读取按键内容。","USB 自动切换",MessageBoxButtons.OK,MessageBoxIcon.Information); };
+            usbHeading.Controls.Add(usbInfo);layout.Controls.Add(usbHeading);
             keyboard.DropDownStyle=mouse.DropDownStyle=mode.DropDownStyle=ComboBoxStyle.DropDownList; keyboard.Width=mouse.Width=600; mode.Width=240;
+            keyboard.AccessibleName="共享键盘接口";mouse.AccessibleName="共享鼠标接口";mode.AccessibleName="触发条件";
             layout.Controls.Add(new Label { Text="共享键盘接口",AutoSize=true });layout.Controls.Add(keyboard);
             layout.Controls.Add(new Label { Text="共享鼠标接口",AutoSize=true });layout.Controls.Add(mouse);
             mode.Items.AddRange(new object[]{"键盘接入","鼠标接入","任一接入","两者都接入"});
-            mode.SelectedIndex=s.TriggerMode=="keyboard"?0:s.TriggerMode=="mouse"?1:s.TriggerMode=="both"?3:2;layout.Controls.Add(mode);
-            automatic.Text="启用 USB 局域网自动切换";automatic.AutoSize=true;automatic.Checked=s.AutoEnabled;layout.Controls.Add(automatic);
+            mode.SelectedIndex=s.TriggerMode=="keyboard"?0:s.TriggerMode=="mouse"?1:s.TriggerMode=="both"?3:2;
+            layout.Controls.Add(new Label { Text="触发条件",AutoSize=true });layout.Controls.Add(mode);
+            automatic.Text="启用自动切换";automatic.AutoSize=true;automatic.Checked=s.AutoEnabled;automatic.Margin=new Padding(0,12,0,8);layout.Controls.Add(automatic);
             deviceState.AutoSize=true;deviceState.MaximumSize=new Size(620,0);layout.Controls.Add(deviceState);
-            layout.Controls.Add(new Label { Text="启动/拔出不切屏；接入需稳定约1秒，并有5秒冷却。只检测连接，不读取按键内容。",AutoSize=true,MaximumSize=new Size(620,0) });
             layout=Page(tabs,"配对与设置");
-            var tools=new FlowLayoutPanel { AutoSize=true,WrapContents=false,Margin=new Padding(0,15,0,0) };
-            var copy=new Button { Text="复制网络配对码",AutoSize=true }; copy.Click+=delegate { if(ForceLocalOnly || !s.NetworkEnabled || s.Key.Length!=32 || !PrivateIP(s.ListenIP)||!PrivateIP(s.MacIP)) { state.Text="当前是本地模式；请点击“配置可选网络配对”。"; return; } Clipboard.SetText("SP1|"+s.ListenIP+"|"+Port+"|"+Convert.ToBase64String(s.Key)); state.Text="配对码已复制，仅粘贴到你自己的 Mac 软件。"; }; tools.Controls.Add(copy);
-            var logs=new Button { Text="导出诊断（无密钥）",AutoSize=true };logs.Click+=delegate { Export(); };tools.Controls.Add(logs);
-            var startup=new Button { Text="设置开机启动",AutoSize=true };startup.Click+=delegate { try { SetStartup(true);state.Text="已登记当前用户启动项，没有发送切换命令。"; } catch(Exception ex) { state.Text=ex.Message;Log("startup_error",ex.GetType().Name); } };tools.Controls.Add(startup);layout.Controls.Add(tools);
+            layout.Controls.Add(new Label { Text="Windows 与 Mac 配对",AutoSize=true,Font=new Font("Segoe UI",15,FontStyle.Bold),Margin=new Padding(0,0,0,12) });
+            var tools=new FlowLayoutPanel { AutoSize=true,WrapContents=false,Margin=new Padding(0,0,0,12) };
+            var networkSetup=new Button { Text="配置网络配对…",AutoSize=true };networkSetup.Click+=delegate { try { if(SetupNetworkWindow(settings)) { networkRestartRequired=true;state.Text="配对已保存；请退出并重新打开 Windows 程序，再复制配对码到 Mac。"; } } catch(Exception ex) { state.Text=ex.Message; } };tools.Controls.Add(networkSetup);
+            var copy=new Button { Text="复制网络配对码",AutoSize=true }; copy.Click+=delegate { if(networkRestartRequired || ForceLocalOnly || !s.NetworkEnabled || s.Key.Length!=32 || !PrivateIP(s.ListenIP)||!PrivateIP(s.MacIP)) { state.Text="请先配置网络配对，并重新打开程序。"; return; } Clipboard.SetText("SP1|"+s.ListenIP+"|"+Port+"|"+Convert.ToBase64String(s.Key)); state.Text="配对码已复制，仅粘贴到你自己的 Mac 软件。"; }; tools.Controls.Add(copy);
+            layout.Controls.Add(tools);
+            netState.AutoSize=true;netState.MaximumSize=new Size(620,0);netState.Margin=new Padding(0,0,0,20);layout.Controls.Add(netState);
+            layout.Controls.Add(new Label { Text="应用",AutoSize=true,Font=new Font("Segoe UI",12,FontStyle.Bold),Margin=new Padding(0,0,0,8) });
             var manage=new FlowLayoutPanel { AutoSize=true,WrapContents=false };
+            var startup=new Button { Text="设置开机启动…",AutoSize=true };startup.Click+=delegate { try {
+                if(MessageBox.Show(this,"将安装程序、创建桌面入口并为当前用户启用开机启动。已有程序文件或同名入口可能被覆盖；设置与日志会保留。","设置开机启动？",MessageBoxButtons.YesNo,MessageBoxIcon.Information,MessageBoxDefaultButton.Button2)!=DialogResult.Yes) return;
+                SetStartup(true);state.Text="已设置开机启动。";
+            } catch(Exception ex) { state.Text=ex.Message;Log("startup_error",ex.GetType().Name); } };manage.Controls.Add(startup);
             var stopStartup=new Button { Text="取消开机启动",AutoSize=true };stopStartup.Click+=delegate { try { SetStartup(false);state.Text="已取消开机启动。"; } catch(Exception ex) { state.Text=ex.Message; } };manage.Controls.Add(stopStartup);
-            var install=new Button { Text="安装到本机并创建桌面入口",AutoSize=true };install.Click+=delegate { try { InstallLocal();state.Text="安装完成。请退出当前窗口后使用桌面入口；下载文件夹可以删除。"; } catch(Exception ex) { state.Text=ex.Message; } };manage.Controls.Add(install);layout.Controls.Add(manage);
-            var networkSetup=new Button { Text="配置可选网络配对…",AutoSize=true };networkSetup.Click+=delegate { try { SetupNetworkWindow(settings);state.Text="网络设置保存后请退出并重新打开；USB功能不受影响。"; } catch(Exception ex) { state.Text=ex.Message; } };layout.Controls.Add(networkSetup);
-            var diagnostics=new Button { Text="打开只读网络诊断工具",AutoSize=true };
-            diagnostics.Click+=delegate { try { var path=Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),"Network-Diagnostics.cmd");if(!File.Exists(path)) { state.Text="请从新版完整压缩包运行 Network-Diagnostics.cmd，报告保存在桌面。";return; } Process.Start(new ProcessStartInfo(path) { UseShellExecute=true }); } catch(Exception ex) { state.Text=ex.Message; } };layout.Controls.Add(diagnostics);
-            layout.Controls.Add(new Label { Text="网络异常时先从托盘退出软件作对照。软件不会更改 DNS、代理、网关或防火墙。",AutoSize=true,MaximumSize=new Size(620,0),Margin=new Padding(0,15,0,0) });
-            netState.AutoSize=true;netState.MaximumSize=new Size(620,0);layout.Controls.Add(netState);
+            var install=new Button { Text="安装到本机并创建桌面入口…",AutoSize=true };install.Click+=delegate { try {
+                string installed=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"ScreenPilotBridge","ScreenPilotBridge.exe");
+                string shortcut=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),"屏幕管家.lnk");
+                if((File.Exists(installed)||File.Exists(shortcut)) && MessageBox.Show(this,"安装可能覆盖已有程序文件和桌面入口；设置与日志会保留。","安装屏幕管家？",MessageBoxButtons.YesNo,MessageBoxIcon.Warning,MessageBoxDefaultButton.Button2)!=DialogResult.Yes) return;
+                InstallLocal();state.Text="安装完成。请退出当前窗口后使用桌面入口；下载文件夹可以删除。";
+            } catch(Exception ex) { state.Text=ex.Message; } };manage.Controls.Add(install);layout.Controls.Add(manage);
+            layout.Controls.Add(new Label { Text="诊断",AutoSize=true,Font=new Font("Segoe UI",12,FontStyle.Bold),Margin=new Padding(0,20,0,8) });
+            var diagnosticActions=new FlowLayoutPanel { AutoSize=true,WrapContents=false };
+            var logs=new Button { Text="导出诊断",AutoSize=true };logs.Click+=delegate { Export(); };diagnosticActions.Controls.Add(logs);
+            var diagnostics=new Button { Text="网络诊断并保存报告…",AutoSize=true };
+            diagnostics.Click+=delegate { try { var path=Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),"Network-Diagnostics.cmd");if(!File.Exists(path)) { state.Text="请从新版完整压缩包运行 Network-Diagnostics.cmd，报告保存在桌面。";return; } Process.Start(new ProcessStartInfo(path) { UseShellExecute=true }); } catch(Exception ex) { state.Text=ex.Message; } };diagnosticActions.Controls.Add(diagnostics);layout.Controls.Add(diagnosticActions);
+            var diagnosticInfo=new Button { Text="ⓘ",Width=32,Height=30,AccessibleName="网络诊断说明" };
+            diagnosticInfo.Click+=delegate { MessageBox.Show(this,"诊断会检查本机网络及到 Microsoft 的连接，并将报告保存到桌面。报告可能包含网络地址，分享前请检查。","网络诊断",MessageBoxButtons.OK,MessageBoxIcon.Information); };
+            diagnosticActions.Controls.Add(diagnosticInfo);
             PopulateAbout(Page(tabs,"关于"));
             try { RefreshInputs(); } catch { SetItems(keyboard,new List<InputDevice>(),true,settings.KeyboardID);SetItems(mouse,new List<InputDevice>(),false,settings.MouseID); } keyboard.SelectedIndexChanged+=Changed;mouse.SelectedIndexChanged+=Changed;mode.SelectedIndexChanged+=Changed;automatic.CheckedChanged+=Changed;
             tray.Icon=Icon;tray.Text="ScreenPilot 切屏";tray.Visible=true;
@@ -171,6 +189,7 @@ public static partial class ScreenPilotBridge {
         }
         void Request(int value,string source) {
             if(source=="usb-local") {
+                if(networkRestartRequired) { state.Text="配对已更改；重新打开程序后才能自动切换。";return; }
                 if(ForceLocalOnly || !settings.NetworkEnabled) { state.Text="USB 联动需要启用网络配对；未发送切屏命令。";return; }
                 lock(ArrivalLock) { ArrivalID=Guid.NewGuid().ToString("N");ArrivalTime=Now(); }
                 state.Text="已记录接入，等待配对 Mac 通过局域网切到 HDMI 2。";
@@ -206,7 +225,7 @@ public static partial class ScreenPilotBridge {
             if(!Visible && !settings.AutoEnabled) return;
             try {
                 var devices=RefreshInputs();bool k=false,m=false;foreach(var d in devices) { if(d.Keyboard&&d.ID==settings.KeyboardID) k=true;if(!d.Keyboard&&d.ID==settings.MouseID) m=true; }
-                deviceState.Text="键盘接口："+(k?"已连接":"未连接")+"  鼠标接口："+(m?"已连接":"未连接");netState.Text=NetworkStatus+"（USB联动需要此服务；手动按钮本地执行）";
+                deviceState.Text="键盘："+(k?"已连接":"未连接")+"   鼠标："+(m?"已连接":"未连接");netState.Text=networkRestartRequired?"配对已更改 · 请重新打开程序":NetworkStatus;
                 if(clock.Elapsed.TotalSeconds<3) { gate.Reset();gate.Observe(k,m,settings.TriggerMode,settings.AutoEnabled,clock.Elapsed.TotalSeconds); }
                 else if(gate.Observe(k,m,settings.TriggerMode,settings.AutoEnabled,clock.Elapsed.TotalSeconds)) Request(18,"usb-local");
             } catch(Exception ex) { deviceState.Text="设备检测失败："+ex.GetType().Name; }
