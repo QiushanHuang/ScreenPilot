@@ -38,9 +38,10 @@ public static partial class ScreenPilotBridge {
             var save=new Button { Text="保存配对",Left=425,Top=205,Width=115 };
             save.Click+=delegate {
                 if(ip.SelectedItem==null || !PrivateIP(mac.Text.Trim())) { MessageBox.Show("请选择 Windows 地址并填写正确的 Mac 局域网 IPv4。");return; }
-                if(current.NetworkEnabled && MessageBox.Show(form,"保存将生成新密钥，现有 Mac 配对会失效且无法撤销。请在重新打开 Windows 程序后，用新配对码重新配对 Mac。","替换现有配对？",MessageBoxButtons.YesNo,MessageBoxIcon.Warning,MessageBoxDefaultButton.Button2)!=DialogResult.Yes) return;
-                current.ListenIP=(string)ip.SelectedItem;current.MacIP=mac.Text.Trim();current.Key=new byte[32];using(var rng=RandomNumberGenerator.Create()) rng.GetBytes(current.Key);
-                current.ProtectedKey="";current.NetworkEnabled=true;Save(current);form.DialogResult=DialogResult.OK;form.Close();
+                bool retainKey=current.NetworkEnabled && !String.IsNullOrEmpty(current.ProtectedKey) && current.MacIP==mac.Text.Trim();
+                if(current.NetworkEnabled && !retainKey && MessageBox.Show(form,"更改允许连接的 Mac 将生成新密钥。继续并重新配对？","更改配对",MessageBoxButtons.YesNo,MessageBoxIcon.Question,MessageBoxDefaultButton.Button2)!=DialogResult.Yes) return;
+                current.ListenIP=(string)ip.SelectedItem;current.MacIP=mac.Text.Trim();if(!retainKey) { current.ProtectedKey="";current.Key=new byte[32];using(var rng=RandomNumberGenerator.Create()) rng.GetBytes(current.Key); }
+                current.NetworkEnabled=true;Save(current);form.DialogResult=DialogResult.OK;form.Close();
             };
             form.Controls.AddRange(new Control[]{ipLabel,ip,label,mac,note,cancel,save});form.AcceptButton=save;form.CancelButton=cancel;
             return form.ShowDialog()==DialogResult.OK;

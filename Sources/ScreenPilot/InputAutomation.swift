@@ -5,6 +5,7 @@ import DisplayCore
 @MainActor final class InputAutomation:ObservableObject {
     let inventory=USBInventory()
     @Published var enabled=UserDefaults.standard.bool(forKey:"usb.auto.enabled")
+    @Published var anyPort=UserDefaults.standard.bool(forKey:"usb.anyPort")
     @Published var keyboardID=UserDefaults.standard.string(forKey:"usb.keyboard") ?? ""
     @Published var mouseID=UserDefaults.standard.string(forKey:"usb.mouse") ?? ""
     @Published var modeRaw=UserDefaults.standard.string(forKey:"usb.mode") ?? "either"
@@ -18,7 +19,7 @@ import DisplayCore
     init() {
         inventory.changed={ [weak self] in self?.devicesChanged() }
         inventoryObserver=inventory.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() }
-        if let initial=presence() { _=gate.observe(initial,mode:mode,enabled:enabled,time:ProcessInfo.processInfo.systemUptime) }
+        _=observe(inventory.devices,at:ProcessInfo.processInfo.systemUptime)
     }
     var mode:InputTriggerMode { InputTriggerMode(rawValue:modeRaw) ?? .either }
     var canEnable:Bool {
@@ -26,26 +27,26 @@ import DisplayCore
     }
     func configure() {
         if enabled && !canEnable { enabled=false; status="请先选择共享键盘或鼠标接口" }
-        UserDefaults.standard.set(enabled,forKey:"usb.auto.enabled"); UserDefaults.standard.set(keyboardID,forKey:"usb.keyboard"); UserDefaults.standard.set(mouseID,forKey:"usb.mouse"); UserDefaults.standard.set(modeRaw,forKey:"usb.mode")
+        UserDefaults.standard.set(anyPort,forKey:"usb.anyPort"); UserDefaults.standard.set(enabled,forKey:"usb.auto.enabled"); UserDefaults.standard.set(keyboardID,forKey:"usb.keyboard"); UserDefaults.standard.set(mouseID,forKey:"usb.mouse"); UserDefaults.standard.set(modeRaw,forKey:"usb.mode")
         gate.reset(); delayed?.cancel(); startupUntil=ProcessInfo.processInfo.systemUptime+3
-        if let initial=presence() { _=gate.observe(initial,mode:mode,enabled:enabled,time:ProcessInfo.processInfo.systemUptime) }
+        _=observe(inventory.devices,at:ProcessInfo.processInfo.systemUptime)
         status=enabled ? "已启用；等待下一次接入，拔出不会切换" : "自动切换关闭；可观察设备列表变化"
     }
-    private func presence()->InputPresence? {
-        guard let devices=USBInventory.scan() else { return nil }
-        return InputPresence(keyboard:devices.contains { $0.id==keyboardID },mouse:devices.contains { $0.id==mouseID })
+    private func observe(_ devices:[USBInputDevice],at time:TimeInterval)->Bool {
+        let keys=devices.filter { $0.keyboard && InputArrivalGate.matches($0.id,selection:keyboardID,anyPort:anyPort) }
+        let mice=devices.filter { !$0.keyboard && InputArrivalGate.matches($0.id,selection:mouseID,anyPort:anyPort) }
+        return gate.observe(keyboards:Set(keys.map(\.id)),mice:Set(mice.map(\.id)),mode:mode,enabled:enabled,time:time)
     }
     private func devicesChanged() {
         let now=ProcessInfo.processInfo.systemUptime
         ControlTrace.log("usb_inventory_changed",operation:"usb",fields:["devices":inventory.devices.map(\.id)])
-        guard let current=presence() else { return }
-        if now<startupUntil { gate.reset(); _=gate.observe(current,mode:mode,enabled:enabled,time:now); return }
-        _=gate.observe(current,mode:mode,enabled:enabled,time:now)
         delayed?.cancel()
+        if now<startupUntil { gate.reset(); _=observe(inventory.devices,at:now); return }
+        if observe(inventory.devices,at:now) { dispatchArrival() }
         delayed=Task { [weak self] in
             do { try await Task.sleep(nanoseconds:1_100_000_000) } catch { return }
-            guard let self,let current=self.presence() else { return }
-            if self.gate.observe(current,mode:self.mode,enabled:self.enabled,time:ProcessInfo.processInfo.systemUptime) { self.dispatchArrival() }
+            guard let self,let devices=USBInventory.scan() else { return }
+            if self.observe(devices,at:ProcessInfo.processInfo.systemUptime) { self.dispatchArrival() }
         }
     }
     private func dispatchArrival() {

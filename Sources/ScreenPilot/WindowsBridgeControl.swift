@@ -34,6 +34,23 @@ import DisplayCore
             return true
         } catch { status=error.localizedDescription; return false }
     }
+    func updateAddress(_ address:String) async {
+        let candidate=address.trimmingCharacters(in:.whitespacesAndNewlines)
+        guard paired,!paused,!busy,BridgeProtocol.isPrivateIPv4(candidate),let key=readKey() else {
+            status="请检查局域网地址、配对和暂停状态";return
+        }
+        busy=true
+        defer { busy=false;inFlight=nil }
+        let task=Task { try await BridgeClient.send(host:candidate,port:port,key:key,action:.health) }
+        inFlight=task
+        do {
+            _=try await task.value
+            guard !paused else { return }
+            host=candidate
+            UserDefaults.standard.set(candidate,forKey:"bridge.host")
+            status="已验证并更新 Windows 地址"
+        } catch { status=error.localizedDescription }
+    }
     func check() async {
         do { _=try await perform(.health); status="Windows 程序已连接，签名校验通过" }
         catch { status=error.localizedDescription }

@@ -4,6 +4,7 @@ import DisplayCore
 
 struct WindowsBridgePanel:View {
     @ObservedObject var bridge:WindowsBridgeControl
+    @State private var address=""
     @State private var code=""
     @State private var confirmingReplacement=false
     var body:some View {
@@ -28,6 +29,15 @@ struct WindowsBridgePanel:View {
                 if bridge.busy { ProgressView().controlSize(.small) }
             }
             if bridge.paired { Text("已配置 Windows：\(bridge.host):\(bridge.port)").font(.caption).foregroundStyle(.secondary) }
+            if bridge.paired {
+                DisclosureGroup("Windows 地址已变更") {
+                    HStack {
+                        TextField("新的局域网 IPv4",text:$address)
+                        Button("验证并更新") { Task { await bridge.updateAddress(address) } }
+                            .disabled(bridge.paused || bridge.busy || address.isEmpty)
+                    }
+                }
+            }
             Text(bridge.status).font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
         }.padding(20).frame(maxWidth:.infinity,alignment:.leading).background(AppPalette.surface,in:RoundedRectangle(cornerRadius:14))
         .alert("替换 Windows 配对？",isPresented:$confirmingReplacement) {

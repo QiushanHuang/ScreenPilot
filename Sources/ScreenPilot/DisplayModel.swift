@@ -59,7 +59,7 @@ import DisplayCore
         return entries
     }()
     func verifiedInputs(for display: DisplayModel) -> [VerifiedInput] {
-        verifiedInputs.filter { $0.matches(display.key) }
+        verifiedInputs.compactMap { $0.bound(to:display.key,vendor:CGDisplayVendorNumber(display.id),model:CGDisplayModelNumber(display.id),live:liveKeys) }
     }
     let connection=ConnectionDriver()
     @Published var connectionUUIDs=Set<String>()
@@ -105,11 +105,12 @@ import DisplayCore
                 do { try await Task.sleep(nanoseconds:UInt64(pollPolicy.delay*1_000_000_000)) } catch { return }
                 guard let self else { return }
                 guard self.inputAutomation.enabled,self.windowsBridge.paired,!self.windowsBridge.paused else { gate=RemoteArrivalGate(); continue }
-                if self.windowsBridge.busy || self.hostSwitchBusy { continue }
+                if self.windowsBridge.busy || self.hostSwitchBusy || self.connectionBusy || self.scanning { continue }
                 do {
                     let reply=try await self.windowsBridge.arrival()
                     pollPolicy.succeeded()
                     self.windowsBridge.status="局域网已连接 · 等待键鼠接入"
+                    guard !self.windowsBridge.paused,self.inputAutomation.enabled,!self.hostSwitchBusy,!self.connectionBusy,!self.scanning else { continue }
                     if gate.accept(id:reply.arrivalID,timestamp:reply.arrivalTime,now:Date().timeIntervalSince1970),
                        let display=self.displays.first(where:{ !self.verifiedInputs(for:$0).isEmpty }) {
                         self.inputAutomation.status="Windows 检测到键鼠接入，Mac 请求切到 HDMI 2"
@@ -285,7 +286,7 @@ import DisplayCore
     func identify() { overlays.identify(displays.filter { !$0.isDisconnected }) }
     @discardableResult func send(_ feature: String,value: Int,to display: DisplayModel) async -> Bool {
         guard !display.busy,!scanning,ControlPolicy.canWrite(display.key,among:liveKeys),
-              (feature == "power" && display.powerSupported) || (feature == "input" && InputAccess.allows(target:display.key,live:liveKeys,readable:display.inputSupported,verified:verifiedInputs,value:value)) else { return false }
+              (feature == "power" && display.powerSupported) || (feature == "input" && InputAccess.allows(target:display.key,live:liveKeys,readable:display.inputSupported,verified:verifiedInputs(for:display),value:value)) else { return false }
         display.busy=true; display.error=nil
         defer { display.busy=false }
         do {

@@ -11,6 +11,7 @@ struct USBSettingsPanel:View {
             }
             picker("共享键盘接口",keyboard:true,selection:$automation.keyboardID)
             picker("共享鼠标接口",keyboard:false,selection:$automation.mouseID)
+            Toggle("跟随同型号接收器（任意 USB 接口）",isOn:$automation.anyPort).onChange(of:automation.anyPort) { automation.configure() }
             Picker("触发条件",selection:$automation.modeRaw) {
                 Text("键盘接入").tag("keyboard"); Text("鼠标接入").tag("mouse")
                 Text("任一接入").tag("either"); Text("两者都接入").tag("both")
@@ -28,7 +29,7 @@ struct USBSettingsPanel:View {
             Text("不监控").tag("")
             ForEach(automation.inventory.devices.filter { $0.keyboard==keyboard }) { device in Text(device.label).tag(device.id) }
             if !selection.wrappedValue.isEmpty && !automation.inventory.devices.contains(where: { $0.id==selection.wrappedValue }) {
-                Text("已选接口当前未连接").tag(selection.wrappedValue)
+                Text(automation.anyPort ? "同型号 · "+selection.wrappedValue : "已选接口当前未连接").tag(selection.wrappedValue)
             }
         }.onChange(of:selection.wrappedValue) { automation.configure() }
     }

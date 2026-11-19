@@ -32,3 +32,17 @@ final class InputArrivalTests:XCTestCase {
         XCTAssertTrue(gate.observe(both,mode:.either,enabled:true,time:12.1))
     }
 }
+
+extension InputArrivalTests {
+    func testPortMoveAndSecondIdenticalReceiver() {
+        let saved="1234:5678:00000011:6", current="1234:5678:00000022:6"
+        XCTAssertFalse(InputArrivalGate.matches(current,selection:saved,anyPort:false))
+        XCTAssertTrue(InputArrivalGate.matches(current,selection:saved,anyPort:true))
+        XCTAssertFalse(InputArrivalGate.matches(current,selection:"1234:5678:00000011:2",anyPort:true))
+        var gate=InputArrivalGate()
+        XCTAssertFalse(gate.observe(keyboards:[saved],mice:[],mode:.either,enabled:true,time:0))
+        XCTAssertFalse(gate.observe(keyboards:[saved,current],mice:[],mode:.either,enabled:true,time:3))
+        XCTAssertTrue(gate.observe(keyboards:[saved,current],mice:[],mode:.either,enabled:true,time:4.1))
+        XCTAssertFalse(gate.observe(keyboards:[saved],mice:[],mode:.either,enabled:true,time:8))
+    }
+}

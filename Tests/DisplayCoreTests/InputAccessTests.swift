@@ -18,3 +18,15 @@ final class InputAccessTests: XCTestCase {
         XCTAssertFalse(InputAccess.allows(target:target,live:[target],readable:true,verified:[],value:255))
     }
 }
+
+extension InputAccessTests {
+    func testRelocationRequiresHardwareFingerprintAndUniqueLiveUUID() {
+        var rule=verified[0]
+        let moved=DeviceKey(id:9,uuid:target.uuid,location:"port-b")
+        XCTAssertNil(rule.bound(to:moved,vendor:1,model:2,live:[moved]))
+        rule.vendor=1;rule.model=2
+        XCTAssertEqual(rule.bound(to:moved,vendor:1,model:2,live:[moved])?.location,moved.location)
+        XCTAssertNil(rule.bound(to:moved,vendor:1,model:3,live:[moved]))
+        XCTAssertNil(rule.bound(to:moved,vendor:1,model:2,live:[target,moved]))
+    }
+}

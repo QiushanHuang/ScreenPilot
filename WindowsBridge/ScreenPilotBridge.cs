@@ -19,8 +19,8 @@ using Microsoft.Win32;
 [assembly: AssemblyProduct("ScreenPilot")]
 [assembly: AssemblyTitle("屏幕管家 · ScreenPilot")]
 [assembly: AssemblyDescription("显示器输入切换与 USB 局域网联动 · QiushanHuang")]
-[assembly: AssemblyVersion("1.6.4.0")]
-[assembly: AssemblyFileVersion("1.6.4.0")]
+[assembly: AssemblyVersion("1.6.5.0")]
+[assembly: AssemblyFileVersion("1.6.5.0")]
 
 public static partial class ScreenPilotBridge {
     const int Port=43871;
